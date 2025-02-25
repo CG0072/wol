@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Container, Card, CardContent, Button, TextField,
   List, ListItem, ListItemText, ListItemSecondaryAction,
-  Grid 
+  Grid, Snackbar, Alert 
 } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 
@@ -14,6 +14,7 @@ interface Device {
 function App() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [newDevice, setNewDevice] = useState({ name: '', mac: '' });
+  const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
   const serverUrl = process.env.REACT_APP_SERVER_URL || 'https://wol.cg0072.lu';
 
   useEffect(() => {
@@ -28,23 +29,37 @@ function App() {
     setDevices(newDevices);
   };
 
-  const addDevice = () => {
-    if (newDevice.name && newDevice.mac) {
-      const updatedDevices = [...devices, newDevice];
-      saveDevices(updatedDevices);
-      setNewDevice({ name: '', mac: '' });
-    }
+  const validateMac = (mac: string) => {
+    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+    return macRegex.test(mac);
   };
 
-  const wakeDevice = async (mac: string) => {
+  const addDevice = () => {
+    if (!newDevice.name) {
+      setMessage({ text: 'Please enter a device name', type: 'error' });
+      return;
+    }
+    if (!validateMac(newDevice.mac)) {
+      setMessage({ text: 'Invalid MAC address format (XX:XX:XX:XX:XX:XX)', type: 'error' });
+      return;
+    }
+    
+    const updatedDevices = [...devices, newDevice];
+    saveDevices(updatedDevices);
+    setNewDevice({ name: '', mac: '' });
+    setMessage({ text: 'Device added successfully', type: 'success' });
+  };
+
+  const wakeDevice = async (mac: string, name: string) => {
     try {
       await fetch(`${serverUrl}/wake`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mac })
       });
+      setMessage({ text: `Wake signal sent to ${name}`, type: 'success' });
     } catch (error) {
-      console.error('Failed to wake device:', error);
+      setMessage({ text: `Failed to wake ${name}`, type: 'error' });
     }
   };
 
@@ -91,7 +106,7 @@ function App() {
                 <ListItemText primary={device.name} secondary={device.mac} />
                 <ListItemSecondaryAction>
                   <Button
-                    onClick={() => wakeDevice(device.mac)}
+                    onClick={() => wakeDevice(device.mac, device.name)}
                     startIcon={<PowerSettingsNewIcon />}
                   >
                     Wake
@@ -102,6 +117,15 @@ function App() {
           </List>
         </CardContent>
       </Card>
+      <Snackbar 
+        open={message !== null} 
+        autoHideDuration={6000} 
+        onClose={() => setMessage(null)}
+      >
+        <Alert severity={message?.type} onClose={() => setMessage(null)}>
+          {message?.text}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
