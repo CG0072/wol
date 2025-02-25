@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/WOL/static/js/main.ce4e56fa.js",
+    "index.html": "/WOL/index.html",
+    "main.ce4e56fa.js.map": "/WOL/static/js/main.ce4e56fa.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.ce4e56fa.js"
+  ]
+}
