@@ -1,8 +1,29 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Alert } from '@mui/material';
 import App from './App';
 import './index.css';
+
+class ErrorBoundary extends React.Component<
+  {children: React.ReactNode},
+  {hasError: boolean}
+> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <Alert severity="error">Something went wrong. Please refresh the page.</Alert>;
+    }
+    return this.props.children;
+  }
+}
 
 const theme = createTheme({
   palette: {
@@ -19,9 +40,11 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

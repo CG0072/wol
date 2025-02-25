@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Container, Card, CardContent, Button, TextField,
   List, ListItem, ListItemText, ListItemSecondaryAction,
-  Grid, Snackbar, Alert 
+  Grid, Snackbar, Alert, CircularProgress 
 } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 
@@ -15,6 +15,7 @@ function App() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [newDevice, setNewDevice] = useState({ name: '', mac: '' });
   const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
+  const [isLoading, setIsLoading] = useState<{[key: string]: boolean}>({});
   const serverUrl = process.env.REACT_APP_SERVER_URL || 'https://wol.cg0072.lu';
 
   useEffect(() => {
@@ -51,15 +52,23 @@ function App() {
   };
 
   const wakeDevice = async (mac: string, name: string) => {
+    setIsLoading({...isLoading, [mac]: true});
     try {
-      await fetch(`${serverUrl}/wake`, {
+      const response = await fetch(`${serverUrl}/wake`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mac })
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       setMessage({ text: `Wake signal sent to ${name}`, type: 'success' });
     } catch (error) {
-      setMessage({ text: `Failed to wake ${name}`, type: 'error' });
+      setMessage({ text: `Failed to wake ${name}: ${error}`, type: 'error' });
+    } finally {
+      setIsLoading({...isLoading, [mac]: false});
     }
   };
 
@@ -107,9 +116,12 @@ function App() {
                 <ListItemSecondaryAction>
                   <Button
                     onClick={() => wakeDevice(device.mac, device.name)}
-                    startIcon={<PowerSettingsNewIcon />}
+                    startIcon={isLoading[device.mac] ? 
+                      <CircularProgress size={20} /> : 
+                      <PowerSettingsNewIcon />}
+                    disabled={isLoading[device.mac]}
                   >
-                    Wake
+                    {isLoading[device.mac] ? 'Sending...' : 'Wake'}
                   </Button>
                 </ListItemSecondaryAction>
               </ListItem>
