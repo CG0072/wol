@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/WOL/static/css/main.27a68d7f.css",
-    "main.js": "/WOL/static/js/main.d4b70b0e.js",
+    "main.js": "/WOL/static/js/main.e6b81408.js",
     "index.html": "/WOL/index.html",
     "main.27a68d7f.css.map": "/WOL/static/css/main.27a68d7f.css.map",
-    "main.d4b70b0e.js.map": "/WOL/static/js/main.d4b70b0e.js.map"
+    "main.e6b81408.js.map": "/WOL/static/js/main.e6b81408.js.map"
   },
   "entrypoints": [
     "static/css/main.27a68d7f.css",
-    "static/js/main.d4b70b0e.js"
+    "static/js/main.e6b81408.js"
   ]
 }
